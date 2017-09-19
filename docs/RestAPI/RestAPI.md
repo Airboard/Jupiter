@@ -26,7 +26,7 @@ This should create a new user account, the payload may include username, prefere
 - **Sample Request**:
 ```
 POST https://{domain-url}/{version}/users/me
-#Post payload#
+#POST request body#
 {
     "username": "john1234",
     "email_address": "abc@def.com",
@@ -44,6 +44,7 @@ This should return the public profile of the user specified, this request can be
 - **Payload**:      N/A
 - **Version**:      v1.0 and later
 - **Security**:     Public accessible, but need location restrictions and protection against DDOS attack.
+- **Sample Request**:
 ```
 GET https://{domain-url}/{version}/users/profiles/1234567890123456
 ```
@@ -55,10 +56,10 @@ This is used to create a user's profile. Upon account creation, each user will b
 - **Version**:      v1.0 and later
 - **Security**:     need authentication, a user should only be allowed to update his own profile.
 - **Side Note**:    Special attentions needed for profile image upload.
-
+- **Sample Request**:
 ```
 POST https://{domain-url}/{version}/users/profiles/1234567890123456
-#Post payload#
+#POST request body#
 {
     "nickname": "Bojack Horseman",
     "bio": "I like to travel",
@@ -75,3 +76,82 @@ Message is the core functionality of Airboard. Messages are location-based and t
     - The message
     - The creator of the message
   - The potentially profitable way is based on the money user paid, which needs to be balanced super carefully to not ruin the user experience.  
+
+### GET /messages/{messageid}
+This is used to retrieve the single message indicated by the message id. Public accessible, but need to take server burden into consideration.
+- **HTTP Method**:  GET
+- **Payload**:      no request body
+- **Version**:      v1.0 and later
+- **Security**:     public accessible
+- **Sample Request**:
+```
+GET https://{domain-url}/{version}/messages/m1234567890123456
+```
+
+### GET /messages
+Return the default message contents based on user’s location and message’s influence, it contains two modes: “list” and “bulk”. The “list” mode will return a list of messages' id; and the "bulk" mode will return a bulk of messages contents. **The location information will be in HTTP headers**.
+- **HTTP Method**:  GET
+- **Payload**:      no request body, parameter "mode" in url, the location info will be in HTTP headers
+- **Version**:      v1.0 and later
+- **Security**:     public accessible
+- **Sample Request**:
+```
+GET https://{domain-url}/{version}/messages?mode=bulk
+GET https://{domain-url}/{version}/messages?mode=list
+```
+
+### POST /messages
+The user create a message which is bound to a location, a message entity will be created on the server and a random message id will be auto-assigned.
+- **HTTP Method**:  POST
+- **Payload**:      POST request body contains contents of the message, the location info will be in HTTP headers
+- **Version**:      v1.0 and later
+- **Security**:     Authentication required
+- **Sample Request**:
+```
+POST https://{domain-url}/{version}/messages
+#POST request body#
+{
+    "content": "This place is beautiful",
+    ...
+}
+```
+
+### DELETE /messages/{messageid}
+A user may delete a message specified by messageid, there will be restrictions where and when he can delete it. For example, a user can't delete a message after its influence goes high, or he is far away from the message location.
+- **HTTP Method**:  DELETE
+- **Payload**:      No request body, the location info will be in HTTP headers
+- **Version**:      v1.0 and later
+- **Security**:     Authentication required
+- **Sample Request**:
+```
+DELETE https://{domain-url}/{version}/messages/m1234567890123456
+```
+
+### PUT /messages/{messageid}/reactions
+This is for users to add reactions to a message. A user can add reactions to a message by specifying the action in the request body. By default a "viewed" reaction is sent, the user can also choose to "like" or other potential reaction. The reactions can be used to evaluate the influence of a user or a message. It can also be used to mark what messages have a user already seen.
+- **HTTP Method**:  PUT
+- **Payload**:      Request body contains reaction information, the location info will be in HTTP request headers
+- **Version**:      v1.0 and later
+- **Security**:     Authentication required
+- **Sample Request**:
+```
+PUT https://{domain-url}/{version}/messages/m1234567890123456
+#POST request body#
+view=true&like=false
+```
+
+### PUT /messages/{messageid}
+This is for the creator of a message to revise the message's content. A user will have limited privilege to edit his own message in some circumstances: after a certain amount of likes the message have gained, the message will spread further and have more audience and it’s unwise to let the user to edit it freely at that time. So we can implement a mechanism that a message can only be revised under a certain influence level.
+- **HTTP Method**:  PUT
+- **Payload**:      Request body contains updated message information, the location info will be in HTTP request headers (the location of the message won't be updated)
+- **Version**:      v1.0 and later
+- **Security**:     Authentication required
+- **Sample Request**:
+```
+PUT https://{domain-url}/{version}/messages/m1234567890123456
+#POST request body#
+{
+    "content": "This place is awful",
+    ...
+}
+```
