@@ -22,7 +22,7 @@ Airboard is using MongoDB for data storage. With more functions to support, the 
  - expire_time
  - geolocation
 
-## Push history:
+## Push history
  - _id
  - push_id
  - user_id
@@ -33,7 +33,7 @@ Airboard is using MongoDB for data storage. With more functions to support, the 
  - impact
  - geolocation
  
- ## Like history:
+ ## Like history
   - _id
   - user_id
   - email
